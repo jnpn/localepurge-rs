@@ -19,11 +19,11 @@ fn main() {
                 map.base.version, map.base.verbose,
             );
 
-            thread::scope(|scope| {
-                let avoid = compile_re(map.locales.locales);
-                let re = Regex::new(avoid.as_str()).unwrap();
-                println!("excluding {}\n", avoid);
+            let avoid = compile_re(map.locales.locales);
+            println!("excluding {}\n", avoid);
+            let re = &Regex::new(avoid.as_str()).unwrap();
 
+            thread::scope(|scope| {
                 for dir in map.locales.dirs {
                     scope.spawn(move || {
                         let mut l_avoided = 0;
