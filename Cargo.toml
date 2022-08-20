@@ -10,3 +10,4 @@ authors = ["jnpn <johan.ponin.pro@gmail.com>"]
 walkdir = "2"
 toml = "0.5.9"
 serde = { version = "1.0.143", features = ["derive"] }
+regex = "1.6.0"
