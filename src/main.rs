@@ -1,4 +1,5 @@
 use regex::Regex;
+use std::collections::HashMap;
 use std::thread;
 use walkdir::WalkDir;
 
@@ -22,6 +23,17 @@ fn main() {
             let avoid = compile_re(map.locales.locales);
             println!("excluding {}\n", avoid);
             let re = &Regex::new(avoid.as_str()).unwrap();
+
+            // map<String, (i64:0, i64:0)>
+            let results: HashMap<String, (i64, i64)> = map
+                .locales
+                .dirs
+                .clone()
+                .into_iter()
+                .map(|dir| (dir, (0, 0)))
+                .collect();
+
+            println!("{:?}", results);
 
             thread::scope(|scope| {
                 for dir in map.locales.dirs {
