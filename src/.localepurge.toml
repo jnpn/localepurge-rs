@@ -1,0 +1,7 @@
+[base]
+verbose = true
+version = 12
+
+[locales]
+dirs = ["/usr/share/man", "/usr/share/doc"]
+locales = ["fr", "fr_FR", "en_GB", "en_US"]
