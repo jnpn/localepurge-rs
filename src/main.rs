@@ -35,6 +35,7 @@ fn main() {
     match load() {
         Err(why) => panic!("{:?}", why),
         Ok(map) => {
+            println!("{:?}", map);
             println!(
                 "verbose: {}\nversion {}\n",
                 map.base.version, map.base.verbose,
