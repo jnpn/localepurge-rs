@@ -31,7 +31,7 @@ fn localized(entry: &DirEntry, locale: String) -> bool {
 }
 
 fn main() {
-    println!("\nlocalepurge-rs\n");
+    println!("\nlocalepurge-rs © jnpn - 2022..<present>\n");
     match load() {
         Err(why) => panic!("{:?}", why),
         Ok(map) => {
