@@ -6,14 +6,19 @@ use walkdir::{DirEntry, WalkDir};
 #[derive(Deserialize, Debug)]
 struct LocalePurgeConf {
     base: BaseConf,
+    locales: LocalesConf,
 }
 
 #[derive(Deserialize, Debug)]
 struct BaseConf {
-    dir: String,
-    locale: String,
     verbose: bool,
     version: i32,
+}
+
+#[derive(Deserialize, Debug)]
+struct LocalesConf {
+    dirs: Vec<String>,
+    locale: Vec<String>,
 }
 
 fn load() -> Result<LocalePurgeConf, Error> {
@@ -40,7 +45,8 @@ fn main() {
                 "verbose: {}\nversion {}\n",
                 map.base.version, map.base.verbose,
             );
-            let walker = WalkDir::new(map.base.dir).into_iter();
+            let dir = map.locales.dirs[0].as_str();
+            let walker = WalkDir::new(dir).into_iter();
             for entry in walker.filter_map(|e| e.ok()) {
                 println!("{}", entry.path().display());
             }
