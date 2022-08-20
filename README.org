@@ -1,7 +1,8 @@
 * DESIGN
 
-Given subtrees
-remove matching files under subtree
+Given subtrees and a set of locales S to keep, walk files and filter out files matching S.
+
+Non destructive design by default.
 
 * CONF
 
@@ -11,24 +12,28 @@ verbose = false
 
 * LDIR
 
-# /usr/share/{locale,man,gnome/help,omf,doc/kde/HTML,tcltk,cups/{templates,locale,doc-root},calendar,aptitude,cups/{templates,locale,doc-root},help,vim/vim*/lang}
-
 [dirs]
-/usr/share/{...}
+dirs = [ ... ]
+locales = [ ... ]
+
+  Originally: /usr/share/{...}
 
 * CACHE
 
-history of desired locales ? present locales ?
+History of desired locales ? present locales ?
 
 [cache]
 /var/cache/purge
 
 * CLI
 
--n --dry-run
+```
 -v --verbose
--l --log
--L --locales
+-L --locales : override locales set in conf
 
-# funsies
--X --extract
+-m --map-to=<dest> : output <src> -> <dest>/<src>
+```
+
+* PARALLELISM
+
+One thread per dir. Gathered file selection into a single Map<dirEntry, Vec<String>> ?
