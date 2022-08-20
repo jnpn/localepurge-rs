@@ -1,3 +1,3 @@
 fn main() {
-    println!("localepurge-rs");
+    println!("\nlocalepurge-rs\n");
 }
