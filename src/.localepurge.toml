@@ -3,5 +3,5 @@ verbose = true
 version = 12
 
 [locales]
-dirs = ["/usr/share/man", "/usr/share/doc"]
+dirs = ["/usr/share/locale", "/usr/share/doc", "/usr/share/man"]
 locales = ["fr", "fr_FR", "en_GB", "en_US"]
