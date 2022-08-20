@@ -1,7 +1,8 @@
+use regex::Regex;
 use serde::Deserialize;
 use std::fs;
 use std::io::Error;
-use walkdir::{DirEntry, WalkDir};
+use walkdir::WalkDir;
 
 #[derive(Deserialize, Debug)]
 struct LocalePurgeConf {
@@ -18,7 +19,7 @@ struct BaseConf {
 #[derive(Deserialize, Debug)]
 struct LocalesConf {
     dirs: Vec<String>,
-    locale: Vec<String>,
+    locales: Vec<String>,
 }
 
 fn load() -> Result<LocalePurgeConf, Error> {
@@ -27,12 +28,8 @@ fn load() -> Result<LocalePurgeConf, Error> {
     Ok(map)
 }
 
-fn localized(entry: &DirEntry, locale: String) -> bool {
-    entry
-        .file_name()
-        .to_str()
-        .map(|s| s.starts_with(locale.as_str()))
-        .unwrap_or(false)
+fn compile_re(_locales: Vec<String>) -> String {
+    String::from(".*/(fr|fr_FR|en|uk|ja)/?.*")
 }
 
 fn main() {
@@ -45,11 +42,27 @@ fn main() {
                 "verbose: {}\nversion {}\n",
                 map.base.version, map.base.verbose,
             );
+
+            let mut avoided = 0;
+            let mut matched = 0;
+
             let dir = map.locales.dirs[0].as_str();
+            let avoid = compile_re(map.locales.locales);
+            let re = Regex::new(avoid.as_str()).unwrap();
+            println!("excluding {}\n", avoid);
+
             let walker = WalkDir::new(dir).into_iter();
             for entry in walker.filter_map(|e| e.ok()) {
-                println!("{}", entry.path().display());
+                let ep = entry.path().to_string_lossy();
+                if re.is_match(&ep) {
+                    avoided += 1;
+                    println!(". {}", ep)
+                } else {
+                    matched += 1;
+                    println!("! {}", ep)
+                }
             }
+            println!("\navoided: {}\nmatched: {}\n", avoided, matched);
         }
     }
 }
