@@ -10,31 +10,28 @@ fn compile_re(_locales: Vec<String>) -> String {
 fn main() {
     println!("\nlocalepurge-rs © jnpn - 2022..<present>\n");
     match config::load() {
-        Err(why) => panic!("{:?}", why),
-        Ok(map) => {
-            println!("{:?}", map);
-            println!(
-                "verbose: {}\nversion {}\n",
-                map.base.version, map.base.verbose,
-            );
+        Err(e) => panic!("{:?}", e),
+        Ok(c) => {
+            println!("{:?}", c);
 
             let mut avoided = 0;
             let mut matched = 0;
 
-            let avoid = compile_re(map.locales.locales);
-            let re = Regex::new(avoid.as_str()).unwrap();
+            let avoid = compile_re(c.locales.locales);
             println!("excluding {}\n", avoid);
 
-            for dir in map.locales.dirs {
+            let r = Regex::new(avoid.as_str()).unwrap();
+
+            for dir in c.locales.dirs {
                 let walker = WalkDir::new(dir).into_iter();
-                for entry in walker.filter_map(|e| e.ok()) {
-                    let ep = entry.path().to_string_lossy();
-                    if re.is_match(&ep) {
+                for e in walker.filter_map(|e| e.ok()) {
+                    let p = e.path().to_string_lossy();
+                    if r.is_match(&p) {
                         avoided += 1;
-                        println!(". {}", ep)
+                        println!(". {}", p)
                     } else {
                         matched += 1;
-                        println!("! {}", ep)
+                        println!("! {}", p)
                     }
                 }
             }
