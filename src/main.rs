@@ -1,5 +1,5 @@
 use regex::Regex;
-use std::collections::HashMap;
+use std::sync::mpsc;
 use std::thread;
 use walkdir::WalkDir;
 
@@ -9,53 +9,58 @@ fn compile_re(_locales: Vec<String>) -> String {
     String::from(".*/(fr|fr_FR|en|uk|ja)/?.*")
 }
 
+fn scan(dir: String, r: &Regex) -> (i32, i32) {
+    let mut avoided = 0;
+    let mut matched = 0;
+    let w = WalkDir::new(dir).into_iter();
+    for e in w.filter_map(|e| e.ok()) {
+        let p = e.path().to_string_lossy();
+        if r.is_match(&p) {
+            avoided += 1;
+            println!(". {}", p)
+        } else {
+            matched += 1;
+            println!("! {}", p)
+        }
+    }
+    (avoided, matched)
+}
+
 fn main() {
     println!("\nlocalepurge-rs © jnpn - 2022..<present>\n");
     match config::load() {
-        Err(why) => panic!("{:?}", why),
-        Ok(map) => {
-            println!("{:?}", map);
-            println!(
-                "verbose: {}\nversion {}\n",
-                map.base.version, map.base.verbose,
-            );
+        Err(e) => panic!("{:?}", e),
+        Ok(c) => {
+            println!("{:?}", c);
 
-            let avoid = compile_re(map.locales.locales);
+            let avoid = compile_re(c.locales.locales);
             println!("excluding {}\n", avoid);
-            let re = &Regex::new(avoid.as_str()).unwrap();
 
-            // map<String, (i64:0, i64:0)>
-            let results: HashMap<String, (i64, i64)> = map
-                .locales
-                .dirs
-                .clone()
-                .into_iter()
-                .map(|dir| (dir, (0, 0)))
-                .collect();
+            let r = &Regex::new(avoid.as_str()).unwrap();
 
-            println!("{:?}", results);
+            let (tx, rx) = mpsc::channel();
 
             thread::scope(|scope| {
-                for dir in map.locales.dirs {
-                    scope.spawn(move || {
-                        let mut l_avoided = 0;
-                        let mut l_matched = 0;
-                        let walker = WalkDir::new(&dir).into_iter();
-                        for entry in walker.filter_map(|e| e.ok()) {
-                            let ep = entry.path().to_string_lossy();
-                            if re.is_match(&ep) {
-                                l_avoided += 1;
-                                println!(". {}", ep)
-                            } else {
-                                l_matched += 1;
-                                println!("! {}", ep)
-                            }
-                        }
-                        println!("\n[{}]\n", dir);
-                        println!("\navoided: {}\nmatched: {}\n", l_avoided, l_matched,);
-                    });
-                }
-            })
+                let ths: Vec<_> = c
+                    .locales
+                    .dirs
+                    .iter()
+                    .map(|dir| {
+                        let t = tx.clone();
+                        scope.spawn(move || {
+                            let (a, m) = scan(dir.to_string(), r);
+                            t.send((a, m)).unwrap();
+                        });
+                    })
+                    .collect();
+                println!("{:?}", ths);
+            });
+
+            println!("\nSummary:\n");
+            for _ in c.locales.dirs {
+                println!("got {:?}", rx.recv());
+            }
+            println!("\nbye.")
         }
     }
 }
