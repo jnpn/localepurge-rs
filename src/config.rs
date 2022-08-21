@@ -11,6 +11,7 @@ pub struct LocalePurgeConf {
 #[derive(Deserialize, Debug)]
 pub struct BaseConf {
     pub verbose: bool,
+    pub log: bool,
     pub version: i32,
 }
 
