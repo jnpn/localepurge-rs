@@ -4,35 +4,34 @@ Given subtrees and a set of locales S to keep, walk files and filter out files m
 
 Non destructive design by default.
 
-* CONF
+* TOML CONFIG
 
-[purge]
-verbose = false
-...
+#+begin_src conf-toml
+  [localepurge]
+  verbose = false
+  logs = false
 
-* LDIR
+  [dirs]
+  # Originally: /usr/share/{...}
+  dirs = [ ... ]
+  locales = [ ... ]
 
-[dirs]
-dirs = [ ... ]
-locales = [ ... ]
+  [history]
+  logs = "/var/log/localepurge-rs"
 
-  Originally: /usr/share/{...}
-
-* CACHE
-
-History of desired locales ? present locales ?
-
-[cache]
-/var/cache/purge
+  # History of desired locales ? present locales ?
+  cache = "/var/cache/localepurge-rs"
+#+end_src
 
 * CLI
 
-```
--v --verbose
--L --locales : override locales set in conf
+#+begin_src bash
+  -v --verbose
+  -l --log
+  -L --locales : override locales set in conf
 
--m --map-to=<dest> : output <src> -> <dest>/<src>
-```
+  -m --map-to=<dest> : output <src> -> <dest>/<src>
+#+end_src
 
 * PARALLELISM
 
